@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Playlist Mover</title>
+<style>
+  body{font:16px/1.6 system-ui,Segoe UI,Roboto,sans-serif;max-width:720px;margin:48px auto;padding:0 20px;color:#222;background:#fafafa}
+  h1{font-size:1.9rem;margin-bottom:.2em} h2{margin-top:2em;font-size:1.2rem}
+  code{background:#eee;padding:1px 5px;border-radius:4px}
+  .muted{color:#666} a{color:#0b57d0}
+</style>
+</head>
+<body>
+<h1>Playlist Mover</h1>
+<p class="muted">A small Windows desktop utility that copies a user's own Spotify playlists to their own YouTube account.</p>
+
+<h2>What it does</h2>
+<p>Playlist Mover is a single-file desktop program (<code>PlaylistMover.exe</code>). When run, it:</p>
+<ol>
+  <li>Asks the user to sign in to Spotify (read-only access to their playlists).</li>
+  <li>Asks the user to sign in to Google/YouTube via the standard OAuth device flow.</li>
+  <li>Lets the user choose which of their Spotify playlists to copy.</li>
+  <li>For each song, searches YouTube for the matching video (preferring official music videos) and adds it to a <strong>private</strong> playlist created in the user's own YouTube account.</li>
+  <li>Shows a summary and lists any songs it couldn't find.</li>
+</ol>
+
+<h2>How it uses the YouTube Data API</h2>
+<p>All YouTube writes go through the official YouTube Data API v3 on behalf of the signed-in user, using these methods only:
+<code>channels.list</code>, <code>playlists.insert</code>, <code>playlistItems.list</code>, <code>playlistItems.insert</code>.
+It only creates and modifies playlists owned by the signed-in user. It does not read other users' data, does not download or store video content, does not display ads, and is not monetized.</p>
+
+<h2>Distribution</h2>
+<p>Playlist Mover is not a public web service. It is a desktop executable shared directly with a small number of people known personally to the developer. There is no server component; the program runs entirely on the user's PC and talks only to Spotify and Google APIs.</p>
+
+<h2>Privacy</h2>
+<p>See the <a href="privacy.html">Privacy Policy</a>.</p>
+
+<h2>Contact</h2>
+<p>Developer: thejunglewalrus &mdash; <a href="mailto:thejunglewalrus@gmail.com">thejunglewalrus@gmail.com</a></p>
+</body>
+</html>
