@@ -231,7 +231,9 @@ tfoot .c-total { text-align:left!important; text-transform:uppercase; letter-spa
     </div>
     <select class="luck-sel" id="luck" aria-label="Luck scenario" hidden>
       <option value="best">Perfect luck — 1 tap</option>
+      <option value="p25">Lucky — 25th percentile</option>
       <option value="avg" selected>Average cost</option>
+      <option value="p75">Unlucky — 75th percentile</option>
       <option value="worst">Worst case — full pity</option>
     </select>
     <p class="note" id="note"></p>
@@ -351,6 +353,17 @@ function expTaps(rate, fill, model){
   if(soft && luck==='best') return {taps:1, graceTaps:1};  // perfect luck: first tap lands
   const M = pity(rate, fill, soft);
   if(soft && luck==='worst') return {taps:M, graceTaps:M-1}; // every tap fails until the artisan guarantee
+  if(soft && (luck==='p25' || luck==='p75')){
+    // Percentile of the taps-to-success distribution: smallest tap T where the
+    // success CDF (1 − Π(1−p_k)) reaches the target. Clamp to the artisan guarantee.
+    const target = luck==='p25' ? 0.25 : 0.75;
+    let miss = 1;
+    for(let k=1;k<=M;k++){
+      miss *= (1 - tapP(p0,g,k,soft));               // miss = P(fail taps 1..k)
+      if(1 - miss >= target || k===M)
+        return {taps:k, graceTaps: k>=M ? k-1 : k};  // guaranteed tap slots no breaths
+    }
+  }
   let E=0, reach=1;
   for(let k=1;k<=M;k++){ E+=reach; if(k===M) break;   // tap M is the guaranteed success
     reach *= (1 - tapP(p0,g,k,soft));
@@ -372,6 +385,8 @@ const NOTES = {
   hard:     'Average total capped by <b>Artisan’s Energy</b> hard pity (guaranteed success by the tap count shown under each rate).',
   soft:     'Average total with the <b>failure-bonus soft pity</b> (success rate climbs as you fail) plus Artisan’s Energy hard pity — the <b>most realistic</b> estimate.',
   soft_best:  'Best case: <b>every stage succeeds on the first tap</b> — identical to the raw per-attempt cost. The floor for a full +0&nbsp;&rarr;&nbsp;+25 run.',
+  soft_p25:   'Lucky quartile: you reach a success by this tap <b>25% of the time or sooner</b>. Costs below the average.',
+  soft_p75:   'Unlucky quartile: <b>75% of runs</b> finish by this tap — the other 25% drag on toward full pity. Costs above the average.',
   soft_worst: 'Worst case: <b>every tap fails</b> until Artisan’s Energy guarantees the success (the tap count under each rate). The ceiling — you can never pay more than this.',
 };
 function rateColor(r){ const v=parseFloat(r); return v>=15?'var(--green)':v>=10?'var(--amber)':v>=5?'var(--gold)':v>=3?'#d98b6a':'var(--red)'; }
@@ -406,6 +421,8 @@ function render(){
   honeGrp.textContent = model==='attempt' ? 'Per Honing Attempt'
     : luck==='best' ? 'Total per Success (Perfect Luck)'
     : luck==='worst' ? 'Worst-Case Total per Success'
+    : luck==='p25' ? '25th-Percentile Total per Success'
+    : luck==='p75' ? '75th-Percentile Total per Success'
     : 'Expected Total per Success';
   honeGrp.colSpan = showG ? 9 : 7;
   note.innerHTML = model==='soft' && luck!=='avg' ? NOTES['soft_'+luck] : NOTES[model];
